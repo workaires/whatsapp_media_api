@@ -60,6 +60,7 @@ dist
 
 # Gatsby files
 .cache/
+.gitignore
 
 # Storybook build outputs
 .out
