@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Media Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffffff 0%, #000000 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .status-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-ready {
+            background: #28a745;
+        }
+
+        .status-waiting {
+            background: #ffc107;
+        }
+
+        .status-error {
+            background: #dc3545;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .qr-code {
+            max-width: 300px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin: 10px auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #25d366;
+        }
+
+        .file-input {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-input input[type=file] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            border: 2px dashed #25d366;
+            border-radius: 8px;
+            text-align: center;
+            color: #25d366;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .file-input:hover .file-input-label {
+            background: #f0f8f0;
+            border-color: #128c7e;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .response.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .response.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: #25d366;
+            color: #25d366;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .media-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .media-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: #e9ecef;
+        }
+
+        .media-info {
+            flex: 1;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 WhatsApp Media & Document Sender</h1>
+            <p>Send photos, videos, and documents via WhatsApp through the API</p>
+        </div>
+
+        <div class="content">
+            <div class="status-section">
+                <h3>Connection Status</h3>
+                <div id="status-display">
+                    <span class="status-indicator status-waiting"></span>
+                    <span id="status-text">Checking status...</span>
+                </div>
+                <div id="qr-display" class="qr-section" style="display: none;">
+                    <h4>Scan the QR Code to connect</h4>
+                    <img id="qr-code" class="qr-code" alt="QR Code">
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('media')">Send Media</div>
+                <div class="tab" onclick="switchTab('document')">Send Document</div>
+                <div class="tab" onclick="switchTab('url')">Send by URL</div>
+            </div>
+
+            <div id="media-tab" class="tab-content active">
+                <form id="media-form">
+                    <div class="form-group">
+                        <label for="phone">Phone Number:</label>
+                        <input type="text" id="phone" name="phone" placeholder="Ex: 5511999999999" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caption">Caption (optional):</label>
+                        <textarea id="caption" name="caption" rows="3" placeholder="Enter a caption for the media..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Media:</label>
+                        <div class="file-input">
+                            <input type="file" id="media" name="media" accept="image/*,video/*,application/*" required>
+                            <div class="file-input-label">
+                                📁 Click to select a photo, video, or document
+                            </div>
+                        </div>
+                        <div id="media-preview" class="media-preview" style="display: none;">
+                            <div id="media-icon" class="media-icon"></div>
+                            <div id="media-info"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" id="send-btn" disabled>
+                        Send Media
+                    </button>
+                </form>
+            </div>
+
+            <div id="document-tab" class="tab-content">
+                <form id="document-form">
+                    <div class="form-group">
+                        <label for="phone-doc">Phone Number:</label>
+                        <input type="text" id="phone-doc" name="phone" placeholder="Ex: 5511999999999" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="caption-doc">Caption (optional):</label>
+                        <textarea id="caption-doc" name="caption" rows="3" placeholder="Enter a caption for the document..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Document:</label>
+                        <div class="file-input">
+                            <input type="file" id="document" name="document" accept="application/*" required>
+                            <div class="file-input-label">
+                                📄 Click to select a document
+                            </div>
+                        </div>
+                        <div id="document-preview" class="media-preview" style="display: none;">
+                            <div id="document-icon" class="media-icon"></div>
+                            <div id="document-info"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" id="send-doc-btn" disabled>
+                        Send Document
+                    </button>
+                </form>
+            </div>
+
+            <div id="url-tab" class="tab-content">
+                <form id="url-form">
+                    <div class="form-group">
+                        <label for="phone-url">Phone Number:</label>
+                        <input type="text" id="phone-url" name="phone" placeholder="Ex: 5511999999999" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="url">Media URL:</label>
+                        <input type="url" id="url" name="url" placeholder="https://example.com/file.jpg" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="caption-url">Caption (optional):</label>
+                        <textarea id="caption-url" name="caption" rows="3" placeholder="Enter a caption for the media..."></textarea>
+                    </div>
+                    <button type="submit" class="btn" id="send-url-btn" disabled>
+                        Send Media by URL
+                    </button>
+                </form>
+            </div>
+
+            <div id="response" class="response"></div>
+
+            <button onclick="disconnect()" class="btn btn-secondary" id="disconnect-btn" style="margin-top: 30px; display: none;">
+                Disconnect WhatsApp
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+
+        checkStatus();
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                updateStatusDisplay(data);
+                
+                if (data.hasQR) {
+                    getQRCode();
+                }
+                
+                setTimeout(checkStatus, 5000);
+            } catch (error) {
+                console.error('Error checking status:', error);
+                updateStatusDisplay({ isReady: false, hasQR: false });
+            }
+        }
+
+        function updateStatusDisplay(data) {
+            const statusIndicator = document.querySelector('.status-indicator');
+            const statusText = document.getElementById('status-text');
+            const sendBtn = document.getElementById('send-btn');
+            const sendDocBtn = document.getElementById('send-doc-btn');
+            const sendUrlBtn = document.getElementById('send-url-btn');
+            const disconnectBtn = document.getElementById('disconnect-btn');
+            
+            statusIndicator.className = 'status-indicator';
+            
+            if (data.isReady) {
+                statusIndicator.classList.add('status-ready');
+                statusText.textContent = 'WhatsApp connected and ready!';
+                sendBtn.disabled = false;
+                sendDocBtn.disabled = false;
+                sendUrlBtn.disabled = false;
+                disconnectBtn.style.display = 'block';
+                document.getElementById('qr-display').style.display = 'none';
+            } else if (data.hasQR) {
+                statusIndicator.classList.add('status-waiting');
+                statusText.textContent = 'Waiting for WhatsApp connection...';
+                sendBtn.disabled = true;
+                sendDocBtn.disabled = true;
+                sendUrlBtn.disabled = true;
+                disconnectBtn.style.display = 'none';
+            } else {
+                statusIndicator.classList.add('status-error');
+                statusText.textContent = 'WhatsApp not connected';
+                sendBtn.disabled = true;
+                sendDocBtn.disabled = true;
+                sendUrlBtn.disabled = true;
+                disconnectBtn.style.display = 'none';
+            }
+        }
+
+        async function getQRCode() {
+            try {
+                const response = await fetch(`${API_BASE}/qr`);
+                const data = await response.json();
+                
+                if (data.qrCode) {
+                    document.getElementById('qr-code').src = data.qrCode;
+                    document.getElementById('qr-display').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error getting QR Code:', error);
+            }
+        }
+
+        document.getElementById('media-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('caption', document.getElementById('caption').value);
+            formData.append('media', document.getElementById('media').files[0]);
+            
+            await sendMedia(formData);
+        });
+
+        document.getElementById('media').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                showMediaPreview(file);
+            } else {
+                hideMediaPreview();
+            }
+        });
+
+        document.getElementById('document').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                showDocumentPreview(file);
+            } else {
+                hideDocumentPreview();
+            }
+        });
+
+        function showMediaPreview(file) {
+            const preview = document.getElementById('media-preview');
+            const info = document.getElementById('media-info');
+            const icon = document.getElementById('media-icon');
+            
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            info.innerHTML = `
+                <strong>Name:</strong> ${file.name}<br>
+                <strong>Type:</strong> ${file.type}<br>
+                <strong>Size:</strong> ${fileSize} MB
+            `;
+            
+            icon.innerHTML = '';
+            if (file.type.startsWith('image/')) {
+                icon.innerHTML = '📷';
+            } else if (file.type.startsWith('video/')) {
+                icon.innerHTML = '🎥';
+            } else if (file.type.startsWith('audio/')) {
+                icon.innerHTML = '🎵';
+            } else if (file.type.includes('pdf')) {
+                icon.innerHTML = '📄';
+            } else if (file.type.includes('document') || file.type.includes('text')) {
+                icon.innerHTML = '📝';
+            } else {
+                icon.innerHTML = '📎';
+            }
+            
+            preview.style.display = 'block';
+        }
+
+        function hideMediaPreview() {
+            document.getElementById('media-preview').style.display = 'none';
+        }
+
+        function showDocumentPreview(file) {
+            const preview = document.getElementById('document-preview');
+            const info = document.getElementById('document-info');
+            const icon = document.getElementById('document-icon');
+            
+            const fileSize = (file.size / 1024 / 1024).toFixed(2);
+            info.innerHTML = `
+                <strong>Name:</strong> ${file.name}<br>
+                <strong>Type:</strong> ${file.type}<br>
+                <strong>Size:</strong> ${fileSize} MB
+            `;
+            
+            icon.innerHTML = '';
+            if (file.type.includes('pdf')) {
+                icon.innerHTML = '📄';
+            } else if (file.type.includes('word') || file.type.includes('document')) {
+                icon.innerHTML = '📝';
+            } else if (file.type.includes('excel') || file.type.includes('spreadsheet')) {
+                icon.innerHTML = '📊';
+            } else if (file.type.includes('powerpoint') || file.type.includes('presentation')) {
+                icon.innerHTML = '📈';
+            } else if (file.type.includes('zip') || file.type.includes('rar') || file.type.includes('7z')) {
+                icon.innerHTML = '📦';
+            } else if (file.type.includes('text')) {
+                icon.innerHTML = '📄';
+            } else {
+                icon.innerHTML = '📎';
+            }
+            
+            preview.style.display = 'block';
+        }
+
+        function hideDocumentPreview() {
+            document.getElementById('document-preview').style.display = 'none';
+        }
+
+        async function sendMedia(formData) {
+            const responseDiv = document.getElementById('response');
+            
+            try {
+                responseDiv.className = 'response';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = 'Sending media...';
+                
+                const response = await fetch(`${API_BASE}/send-media`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ ${data.message}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ ${data.error}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error sending media: ${error.message}`;
+            }
+        }
+
+        document.getElementById('document-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('phone', document.getElementById('phone-doc').value);
+            formData.append('caption', document.getElementById('caption-doc').value);
+            formData.append('document', document.getElementById('document').files[0]);
+            
+            await sendDocument(formData);
+        });
+
+        async function sendDocument(formData) {
+            const responseDiv = document.getElementById('response');
+            
+            try {
+                responseDiv.className = 'response';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = 'Sending document...';
+                
+                const response = await fetch(`${API_BASE}/send-document`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ ${data.message}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ ${data.error}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error sending document: ${error.message}`;
+            }
+        }
+
+        document.getElementById('url-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone-url').value;
+            const url = document.getElementById('url').value;
+            const caption = document.getElementById('caption-url').value;
+            const responseDiv = document.getElementById('response');
+            try {
+                responseDiv.className = 'response';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = 'Sending media by URL...';
+                const response = await fetch(`${API_BASE}/send-media-url`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, url, caption })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    responseDiv.className = 'response success';
+                    responseDiv.textContent = `✅ ${data.message}`;
+                } else {
+                    responseDiv.className = 'response error';
+                    responseDiv.textContent = `❌ ${data.error}`;
+                }
+            } catch (error) {
+                responseDiv.className = 'response error';
+                responseDiv.textContent = `❌ Error sending media by URL: ${error.message}`;
+            }
+        });
+
+        async function disconnect() {
+            try {
+                const response = await fetch(`${API_BASE}/disconnect`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                alert(data.message);
+                checkStatus();
+            } catch (error) {
+                alert('Error disconnecting: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html> 
